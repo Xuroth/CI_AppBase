@@ -61,7 +61,7 @@ $route = array(
 	//Auth
 	'login'				=>	'auth/login',
 	'register'		=>	'auth/register',
-	'forgot'			=>	'auth/register',
+	'forgot'			=>	'auth/forgot',
 	'confirm/(:any)'	=>	'auth/confirm/$1',
 	'logout'			=>	'auth/logout'	
 );

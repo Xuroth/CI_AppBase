@@ -92,4 +92,31 @@ class Auth_model extends CI_Model {
 			return $string;
 		}
 	}
+
+	public function getUserByEmail($email)
+	{
+		$query = $this->db->select('users.id, users.username, users.email, users.status')
+											->where('users.email', $email)
+											->from('users')
+											->limit(1)
+											->get();
+
+		if ( $query->num_rows() == 1 )
+		{
+			return $query->row(0);
+		}
+		return NULL;
+	}
+
+	public function setUserToken($user, $token)
+	{
+		$userData = array(
+			'code'	=>	$token
+		);
+
+		$this->db->where('id', $user);
+		$this->db->update('users', $userData);
+
+		return;
+	}
 }
