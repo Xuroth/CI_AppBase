@@ -119,4 +119,50 @@ class Auth_model extends CI_Model {
 
 		return;
 	}
+
+	public function getUserByCode($code)
+	{
+		$query = $this->db->select('users.id')
+											->where('code', $code)
+											->limit(1)
+											->from('users')
+											->get();
+
+		if ( $query->num_rows() == 1 )
+		{
+			return $query->row(0);
+		}
+		return NULL;
+	}
+
+	public function resetUserPassword($user, $password)
+	{
+		//Load Library: Bcrypt
+		$this->load->library('bcrypt');
+
+		$hashedPassword = $this->bcrypt->hash_password($password);
+
+		$userData = array(
+			'password'				=>	$hashedPassword,
+			'forcePassReset'	=>	NULL,
+			'failedAttempts'	=>	0,
+			'code'						=>	NULL
+		);
+
+		$this->db->where('id', $user);
+		$this->db->update('users', $userData);
+		return;
+	}
+
+	public function activateUserAccount($code)
+	{
+		$userData = array(
+			'status'	=>	'1',
+			'code'		=>	NULL
+		);
+
+		$this->db->where('code', $code);
+		$this->db->update('users', $userData);
+		return;
+	}
 }

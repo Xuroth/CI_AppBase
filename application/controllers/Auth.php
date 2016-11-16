@@ -356,7 +356,13 @@ class Auth extends CI_Controller {
 			$this->load->model('Auth_model');
 
 			//Get User Data
-			$userData = $this->Auth_model->getUserData(array('email' => $this->input->post('email')));
+			$userData = $this->Auth_model->getUserByEmail($this->input->post('email'));
+
+			if ( $userData == NULL )
+			{
+				$this->session->set_flashdata('error', 'Unable to reset password for <i>'.$this->input->post('email')."</i>.");
+				redirect('forgot');
+			}
 
 			//Check user status banned?
 			if ( ( $userData->status == 3 ) OR ( $userData->status == 4 ) )
@@ -383,7 +389,7 @@ class Auth extends CI_Controller {
 				'code'	=>	$token,
 				'link'	=>	base_url('reset/'.$token),
 				'username'	=>	$userData->username,
-				'email'			=>	$userData->email
+				'email'			=>	$userData->email,
 				'ipAddress'	=>	$this->input->ip_address()
 			);
 
@@ -434,10 +440,8 @@ class Auth extends CI_Controller {
 		//Load Model: Auth
 		$this->load->model('Auth_model');
 
-		$userData = $this->Auth_model->activateUserAccount($code);
-
 		//Check if error was returned instead of userData
-		if ( is_string($userData) )
+		if ( !$this->Auth_model->activateUserAccount($code) )
 		{
 			$this->session->set_flashdata('error', $userData);
 			redirect('/');
@@ -458,6 +462,7 @@ class Auth extends CI_Controller {
 		}
 
 		//Load Library: Form Validation
+		$this->load->library('form_validation');
 
 		$validationRules = array(
 			array(
@@ -485,12 +490,35 @@ class Auth extends CI_Controller {
 		if ( $this->form_validation->run() == FALSE )
 		{
 			//Show form (supply $token as hidden form field)
+			$pageData = array(
+				'title'		=>	'Reset Password',
+				'module'	=>	'auth',
+				'page'		=>	'resetPass'
+			);
+
+			$data['token']	= $code;
+
+			$data['pageData'] = (object)$pageData;
+
+			$this->load->view('layouts/layout', $data);
 		}
 		else
 		{
-			//Make sure $token matches a user
-			//Update user password
-			//redirect to login
+			//Load Model: Auth
+			$this->load->model('Auth_model');
+
+			$userData = $this->Auth_model->getUserByCode($this->input->post('token'));
+
+			if ( $userData == NULL )
+			{
+				$this->session->set_flashdata('error', 'Cannot update password! Please re-check the email for the correct link.');
+				redirect('reset/'.$code);
+			}
+
+			$this->Auth_model->resetUserPassword($userData->id, $this->input->post('password'));
+
+			$this->session->set_flashdata('success', 'You have successfully reset your password. Please login below with your new password.');
+			redirect('login');
 
 		}
 	}

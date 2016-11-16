@@ -1,5 +1,5 @@
 <h1>Login</h1>
-
+<a href="<?php echo base_url('forgot'); ?>">Forgot Password</a>
 <?php
 
 $this->load->helper('form');
