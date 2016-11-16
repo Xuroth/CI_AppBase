@@ -319,6 +319,32 @@ class Auth extends CI_Controller {
 		{
 			redirect('/');
 		}
+
+		$this->load->library('form_validation');
+
+		$validationRules = array(
+			array(
+				'field'		=>	'email',
+				'label'		=>	'Email Address',
+				'rules'		=>	'required|valid_email|max_length[50]',
+				'errors'	=>	array(
+					'required'		=>	'You must provide an %s.',
+					'valid_email'	=>	'Your %s must be in valid email format.',
+					'max_length'	=>	'Your {field} must be less than {param} characters.'
+				)
+			)
+		);
+
+		$this->form_validation->set_rules($validationRules);
+
+		if ( $this->form_validation->run() == FALSE )
+		{
+			//Setup View
+		}
+		else
+		{
+			//Send email to confirm account. Show confirmation.
+		}
 	}
 
 	public function confirm($code = NULL)
